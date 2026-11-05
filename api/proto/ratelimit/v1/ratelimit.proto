@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ratelimit.v1;
+
+option go_package = "github.com/khatran/abyss/gen/ratelimit/v1;ratelimitv1";
+
+// RateLimitService implements Envoy's external rate limit service contract.
+service RateLimitService {
+  rpc ShouldRateLimit(ShouldRateLimitRequest) returns (ShouldRateLimitResponse);
+}
+
+message ShouldRateLimitRequest {
+  string domain = 1;
+  repeated Descriptor descriptors = 2;
+}
+
+message Descriptor { repeated Entry entries = 1; }
+message Entry { string key = 1; string value = 2; }
+
+message ShouldRateLimitResponse {
+  enum Code { UNKNOWN = 0; OK = 1; OVER_LIMIT = 2; }
+  Code overall_code = 1;
+  repeated DescriptorStatus statuses = 2;
+}
+
+message DescriptorStatus {
+  enum Code { UNKNOWN = 0; OK = 1; OVER_LIMIT = 2; }
+  Code code = 1;
+  uint32 limit = 2;
+  uint32 remaining = 3;
+  uint32 duration_until_reset = 4;
+}
